@@ -11,12 +11,14 @@
 
 This is a **four-person team project**. We each researched one part of a single question — *in high-frequency trading, where do the microseconds go, and how does the industry get them back?*
 
-| Part | Topic | Research |
-|------|-------|----------|
-| 1 | The Problem — what HFT is, and which network delays software can control | Boseok Kim |
-| **2** | **The Solution — kernel bypass: DPDK, OpenOnload, RDMA** | **Jungha Kim (me)** |
-| 3 | Empirical Validation — TCP vs UDP measured with Docker + `tc netem` | Hanju Son |
-| 4 | Industry Practice — NASDAQ, CME, NYSE, Citadel | Junseo Lee |
+| Part | Topic | Research | Deep dive |
+|------|-------|----------|-----------|
+| 1 | The Problem — what HFT is, and which network delays software can control | Boseok Kim | [Boseok's repo](https://github.com/Boseok329/Network-_2026_1) |
+| **2** | **The Solution — kernel bypass: DPDK, OpenOnload, RDMA** | **Jungha Kim (me)** | **this post** |
+| 3 | Empirical Validation — TCP vs UDP measured with Docker + `tc netem` | Hanju Son | [Hanju's repo](https://github.com/HANJUSON/Network_2026_1) |
+| 4 | Industry Practice — NASDAQ, CME, NYSE, Citadel | Junseo Lee | [Junseo's repo](https://github.com/junseo200302-bit/CN_Module5_Group7) |
+
+Each of us wrote a detailed post on our own part — the links above lead to each member's deep-dive repository.
 
 **My part was Part 2, kernel bypass.** So this post summarizes the other parts only as much as needed to follow the story, and goes into the most detail on Section 2 — why the Linux kernel is the single biggest latency bottleneck, and exactly how each bypass technique removes it.
 
@@ -66,6 +68,8 @@ d_total  =  d_proc  +  d_queue  +  d_trans  +  d_prop
 > **Light speed is fixed. Software isn't.** Only two of the four delays are software-controlled — and they happen to be exactly the two that dominate microsecond-scale systems. Part 2 attacks `d_proc`; Part 3 attacks `d_queue`.
 
 One more property makes `d_queue` dangerous: it is **non-linear**. As traffic intensity ρ approaches 1, queueing delay doesn't grow gradually — it explodes from microseconds to milliseconds in a single burst of loss or retransmission [[2]](#references). Keep that in mind for Section 3.
+
+*For the full latency analysis, see [Boseok's repository](https://github.com/Boseok329/Network-_2026_1).*
 
 ---
 
@@ -219,6 +223,8 @@ With no loss, protocol choice barely matters (~10 µs gap). Add **just 1% packet
 
 For HFT the trade-off has exactly the right shape: a missed market-data tick is *recoverable* (the next update replaces it in microseconds), but a 200 ms stall is *permanent* — the opportunity is gone.
 
+*For the full benchmark write-up and experiment details, see [Hanju's repository](https://github.com/HANJUSON/Network_2026_1).*
+
 ---
 
 ## 4. Industry Practice — how real exchanges apply all of this
@@ -247,6 +253,8 @@ Top HFT firms (Citadel Securities, Jane Street, Jump Trading, Virtu) apply the s
 | Kernel adds 20–60 µs per round-trip (Part 2) | Both channels accelerated via kernel bypass (Citadel, Virtu) |
 
 > **We didn't just summarize the industry. We measured the exact trade-off the entire industry is built around.**
+
+*For the full industry-practice analysis, see [Junseo's repository](https://github.com/junseo200302-bit/CN_Module5_Group7).*
 
 ---
 
