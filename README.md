@@ -40,7 +40,7 @@ The HFT bottleneck is *software*, not the speed of light. The kernel wastes 20�
 
 *(Part 1 summary — Research: Boseok Kim)*
 
-**High-Frequency Trading (HFT)** is automated trading where machines, not humans, decide and submit orders on microsecond timescales. Roughly **~50% of US equity trading volume** is HFT, and the economics of the latency race itself have been quantified at billions of dollars per year across the market [[1]](#references).
+**High-Frequency Trading (HFT)** is automated trading where machines, not humans, decide and submit orders on microsecond timescales. Industry estimates put HFT at roughly **~50% of US equity trading volume**, and academic work has quantified latency-arbitrage races at about 20% of trading volume, cumulating to billions of dollars per year across global markets [[1]](#references).
 
 The key competitive rule is brutal: when a price moves, **only the first arriving order captures the trade**. Second place wins nothing. This has one important consequence for measurement:
 
@@ -213,7 +213,7 @@ hft-client (10.10.0.3) ──── Docker bridge 10.10.0.0/24 ──── hft-
 
 With no loss, protocol choice barely matters (~10 µs gap). Add **just 1% packet loss** and TCP's P99 explodes by **~545×** to 205 ms, while UDP's tail doesn't move.
 
-**Why exactly 200 ms?** One constant in the Linux kernel source: `TCP_RTO_MIN = HZ/5` → **200 ms** (defined in `include/net/tcp.h` [[4]](#references)). TCP cannot detect a lost packet faster than its retransmission timeout, and Linux hardcodes the floor of that timeout at 200 ms. On a 180 µs network, one lost packet means TCP **waits at least 200 ms** — a thousand times the normal RTT — before even retrying.
+**Why exactly 200 ms?** One constant in the Linux kernel source: `TCP_RTO_MIN = HZ/5` → **200 ms** (defined in `include/net/tcp.h` [[4]](#references)). TCP cannot detect a lost packet faster than its retransmission timeout, and Linux sets the default floor of that timeout at 200 ms — a constant in the kernel, not a tunable `sysctl`. On a 180 µs network, one lost packet means TCP **waits at least 200 ms** — a thousand times the normal RTT — before even retrying.
 
 > **TCP guarantees delivery — but its guarantee mechanism *is* the latency.** UDP simply refuses to wait: it lost 8 of 1,000 orders but delivered the other 992 at baseline speed. This is Section 1's non-linear `d_queue` blow-up, measured on our own machine.
 
@@ -291,13 +291,13 @@ All figures referenced in this post (the mean-vs-P99 distribution curve, the 545
 2. J. F. Kurose and K. W. Ross. *Computer Networking: A Top-Down Approach*, Chapters 1 & 3 (delay decomposition; queueing delay vs. traffic intensity ρ).
 3. Intel / Linux Foundation. *DPDK Programmer's Guide* (poll-mode drivers, huge pages, zero-copy). <https://doc.dpdk.org/guides/prog_guide/>. Latency figures also from Solarflare/AMD whitepapers.
 4. Linux kernel source. `TCP_RTO_MIN` definition, `include/net/tcp.h` (`#define TCP_RTO_MIN ((unsigned)(HZ/5))` → 200 ms). <https://github.com/torvalds/linux/blob/master/include/net/tcp.h>.
-5. K. Taranov et al. "CoRD: Converged RDMA Dataplane for High-Performance Clouds" (RDMA's three properties: kernel bypass, zero-copy, polling). arXiv:2309.00898.
+5. M. Planeta, J. Bierbaum, M. Roitzsch, and H. Härtig. "CoRD: Converged RDMA Dataplane for High-Performance Clouds" (RDMA's three properties: kernel bypass, zero-copy, polling). arXiv:2309.00898.
 6. CME Group. *MDP 3.0 — Market Data Platform & Channel Recovery Documentation* (UDP multicast + SBE encoding; TCP recovery channel).
 7. NASDAQ. *TotalView-ITCH 5.0 Specification* and *OUCH* order-entry protocol (MoldUDP64 transport).
 8. NYSE. *Pillar Gateway Technical Reference* (UDP multicast market data with redundant A/B lines; FIX over TCP).
 9. J. W. Lockwood et al. "A Low-Latency Library in FPGA Hardware for High-Frequency Trading (HFT)." *IEEE 20th Annual Symposium on High-Performance Interconnects (HOTI)*, 2012.
-10. AMD/Solarflare. *OpenOnload* — user-space network stack with `LD_PRELOAD` socket acceleration. <https://www.openonload.org/>.
-11. *Joyride: Rethinking Linux's Network Stack* (DPDK mechanism reference: PMD, huge pages, zero-copy ring buffers). arXiv:2509.25015.
+10. AMD/Solarflare. *OpenOnload* — user-space network stack with `LD_PRELOAD` socket acceleration. <https://github.com/Xilinx-CNS/onload>.
+11. Y. Du and R. Nikolaev. "Joyride: Rethinking Linux's Network Stack Design for Better Performance, Security, and Reliability." *3rd Workshop on Kernel Isolation, Safety and Verification (KISV '25)*, 2025. arXiv:2509.25015.
 
 ---
 
