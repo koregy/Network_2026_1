@@ -3,7 +3,7 @@
 > **Computer Networks (DCCS307) · Module 5 Case Study · Group 07 · 2026**
 >
 > **Presentation video:** [▶ Watch on YouTube](https://youtu.be/AZ7Uc7IFcnU)
-> **Slides:** [`slides/CN_Group7.pdf`](slides/CN_Group7.pdf)
+> **Slides:** [`slides/CN_Group7.pdf`](slides/CN_Group7_ppt.pdf)
 
 ---
 
